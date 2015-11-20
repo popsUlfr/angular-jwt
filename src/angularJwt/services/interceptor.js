@@ -1,12 +1,13 @@
- angular.module('angular-jwt.interceptor', [])
+angular.module('angular-jwt.interceptor', [])
   .provider('jwtInterceptor', function() {
 
     this.urlParam = null;
     this.authHeader = 'Authorization';
     this.authPrefix = 'Bearer ';
+    this.forceHeadersUpdate = false;
     this.tokenGetter = function() {
       return null;
-    }
+    };
 
     var config = this;
 
@@ -26,7 +27,7 @@
           } else {
             request.headers = request.headers || {};
             // Already has an Authorization header
-            if (request.headers[config.authHeader]) {
+            if (!config.forceHeadersUpdate && request.headers[config.authHeader]) {
               return request;
             }
           }
