@@ -202,6 +202,7 @@ angular.module('app', ['angular-jwt'])
 ````
 
 ### Force jwtInterceptor to call `tokenGetter` for each request
+
 By default `tokenGetter` won't be called if authorization header has already been set. Sometimes angular caches headers and `tokenGetter` is not called. To force jwtInterceptor call `tokenGetter` for each request set `forceHeadersUpdate` parameter to `true`
 
 ````js
@@ -216,13 +217,11 @@ angular.module('app', ['angular-jwt'])
   
   $httpProvider.interceptors.push('jwtInterceptor');
 }).controller('Controller', function Controller($http) {
-  // If localStorage contains the id_token it will be sent in the request
-  // url will contain access_token=[yourToken]
-  $http({
+   //This header will be replaced by jwtInterceptor's tokenGetter
+   $http({
     url: '/hola',
     method: 'GET',
     headers: {
-    //This header will be replaced by jwtInterceptor's tokenGetter
       Authorization: 'i_will_be_replaced'
     }
   });
