@@ -12,15 +12,16 @@ angular.module('angular-jwt',
         'angular-jwt.jwt'
     ]);
 
- angular.module('angular-jwt.interceptor', [])
+angular.module('angular-jwt.interceptor', [])
   .provider('jwtInterceptor', function() {
 
     this.urlParam = null;
     this.authHeader = 'Authorization';
     this.authPrefix = 'Bearer ';
+    this.forceHeadersUpdate = false;
     this.tokenGetter = function() {
       return null;
-    }
+    };
 
     var config = this;
 
@@ -40,7 +41,7 @@ angular.module('angular-jwt',
           } else {
             request.headers = request.headers || {};
             // Already has an Authorization header
-            if (request.headers[config.authHeader]) {
+            if (!config.forceHeadersUpdate && request.headers[config.authHeader]) {
               return request;
             }
           }
@@ -72,7 +73,7 @@ angular.module('angular-jwt',
   });
 
  angular.module('angular-jwt.jwt', [])
-  .service('jwtHelper', function() {
+  .service('jwtHelper', ["$window", function($window) {
 
     this.urlBase64Decode = function(str) {
       var output = str.replace(/-/g, '+').replace(/_/g, '/');
@@ -84,7 +85,7 @@ angular.module('angular-jwt',
           throw 'Illegal base64url string!';
         }
       }
-      return decodeURIComponent(escape(window.atob(output))); //polifyll https://github.com/davidchambers/Base64.js
+      return $window.decodeURIComponent(escape($window.atob(output))); //polyfill https://github.com/davidchambers/Base64.js
     }
 
 
@@ -100,12 +101,11 @@ angular.module('angular-jwt',
         throw new Error('Cannot decode the token');
       }
 
-      return JSON.parse(decoded);
+      return angular.fromJson(decoded);
     }
 
     this.getTokenExpirationDate = function(token) {
-      var decoded;
-      decoded = this.decodeToken(token);
+      var decoded = this.decodeToken(token);
 
       if(typeof decoded.exp === "undefined") {
         return null;
@@ -127,6 +127,6 @@ angular.module('angular-jwt',
       // Token expired?
       return !(d.valueOf() > (new Date().valueOf() + (offsetSeconds * 1000)));
     };
-  });
+  }]);
 
 }());
